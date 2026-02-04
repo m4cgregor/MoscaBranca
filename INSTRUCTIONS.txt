@@ -1,0 +1,187 @@
+You are CODEX acting as a senior full-stack engineer. Build an MVP for a Brazil-focused product called “Mosca Branca”.
+
+Goal
+- Let auto body shops (“Oficinas”) create structured requests for used/reconditioned auto parts.
+- Distribute each request via WhatsApp Business API to a relevant network of receivers (“Vendors/Desmanches”).
+- No marketplace checkout, no commission, no in-app negotiation. Contact is direct between parties via WhatsApp.
+
+Core UX
+- WhatsApp is the delivery channel. The app is the control center (create request, history, close request, billing).
+- Receivers can be free (“Receiver” plan) and mainly receive messages via WhatsApp.
+
+Tech Stack Requirements
+- Mobile app: Flutter (Android + iOS).
+- Backend: Node.js + NestJS, REST API.
+- Database: PostgreSQL.
+- Storage: S3-compatible for images.
+- Jobs/queues: BullMQ + Redis for async tasks (enrichment, targeting, WhatsApp delivery).
+- WhatsApp provider: integrate Meta WhatsApp Cloud API (with an abstraction layer to swap providers later).
+- Payments (Brazil): implement Stripe subscriptions + one-time payments as a placeholder (clearly isolate billing so it can be replaced by Mercado Pago later).
+
+MVP Scope (must implement)
+1) Authentication / Login
+- Phone number login using OTP.
+- Implement as a backend OTP flow (store hashed OTP with TTL). For MVP, use a “dev mode” provider that logs OTP to console and a “prod mode” stub with TODO for SMS provider.
+
+2) User Registration
+Required fields:
+- companyName
+- responsibleName
+- phone (WhatsApp number with country code)
+- city
+- state
+- userType: OFFICE or VENDOR
+- lgpdAccepted (boolean + timestamp)
+- user status: ACTIVE / MUTED / DISABLED
+
+3) Plans & Billing
+Plans:
+- BASIC (Office): BRL 39.90/month, up to 5 requests/month
+- PROFESSIONAL (Office): BRL 79.90/month, unlimited requests, priority sending, WhatsApp highlight
+- PREMIUM (Office): BRL 149.90/month, includes PROFESSIONAL + up to 3 users per company + monthly report
+- RECEIVER (Free): can receive messages, cannot publish requests
+- ONE_TIME_POST: BRL 24.90 for a single request (pay before sending)
+
+Rules:
+- Publishing requires an active paid plan (BASIC/PROFESSIONAL/PREMIUM) or successful ONE_TIME_POST payment.
+- Receivers are free and can opt-out (mute).
+- BASIC plan enforces monthly quota.
+- Implement a billing service interface with Stripe-based implementation (subscriptions + one-time payments). Put provider details behind an abstraction.
+
+4) Create Part Request (the heart)
+A request must be structured and cannot be sent if incomplete.
+Required fields:
+- photo (upload)
+- make
+- model
+- year
+- color
+- partName
+- side (RIGHT / LEFT / BOTH / NONE)
+- city
+- urgency (NORMAL / TODAY)
+Optional:
+- notes
+
+Constraints:
+- One part per request.
+- Once sent, request is not editable.
+- Request ID like MB-000123.
+- Status: OPEN / CLOSED / EXPIRED.
+- Auto-expire after 7 days if still OPEN.
+
+5) WhatsApp Distribution
+- After a request is created and paid/allowed, system must:
+  a) Persist request
+  b) Run “enrichment/normalization”
+  c) Compute recipients (targeting)
+  d) Send WhatsApp message to recipients
+- WhatsApp message must include:
+  - standardized fields
+  - attached photo
+  - direct contact phone of requester
+  - request ID
+  - fixed disclaimer: “Mosca Branca does not participate in the negotiation.”
+
+Sending rules (MVP heuristics):
+- Only send between 08:00 and 18:00 local time (Brazil). Outside that window, schedule for next window.
+- Recipients must be ACTIVE and not MUTED.
+- Minimum targeting:
+  - Same state as request
+  - Prefer VENDOR userType
+  - If not enough recipients, expand to neighboring states (configurable list) or to all states as fallback (configurable)
+- Add simple throttling:
+  - Max X requests/day per OFFICE (default 3)
+  - Max Y messages/day per recipient (default 30)
+
+Plan features:
+- PROFESSIONAL/PREMIUM requests get priority in queue and “highlight” in message:
+  - add a star emoji and label like “PRIORITY”
+- BASIC/ONE_TIME_POST have no priority.
+
+6) History & Closing
+Office can:
+- list requests
+- view details
+- close a request manually
+- Closed requests stop any further sends
+- Expired requests are read-only
+
+7) Receiver Preferences (lightweight)
+- Receiver can set:
+  - preferred states (list)
+  - preferred makes (optional)
+  - mute/unmute
+For MVP, state filter is required; makes optional.
+
+8) AI/Normalization (MVP)
+Implement an “AI Enrichment Service” module:
+- For MVP, do not call external LLM.
+- Use a dictionary + fuzzy matching to normalize partName (Portuguese synonyms).
+- Store normalizedPartName, partCategoryId, confidence.
+- Provide a clear interface so it can be replaced with an LLM later.
+
+Deliverables
+A) Backend (NestJS)
+- Clean modular architecture:
+  - auth, users, billing, requests, media, enrichment, targeting, whatsapp, reports (reports can be stubbed)
+- OpenAPI/Swagger docs
+- Docker compose for Postgres + Redis
+- Migration scripts (typeorm or prisma, choose one and be consistent)
+- Environment variables template (.env.example)
+- Unit tests for enrichment and targeting scoring
+
+B) Flutter App
+Screens:
+- Splash
+- Login (phone + OTP)
+- Signup (required fields)
+- Home/Dashboard:
+  - If OFFICE: create request, list history, billing status
+  - If RECEIVER/VENDOR: preferences + mute status
+- Create Request form:
+  - image picker/camera
+  - required fields
+  - confirm + publish
+- Request details:
+  - status
+  - close request button (OFFICE only)
+
+C) WhatsApp Integration
+- Implement provider abstraction:
+  - WhatsAppProvider interface
+  - MetaCloudWhatsAppProvider implementation (use HTTP requests with auth token)
+- For MVP, include a “MockWhatsAppProvider” that logs outbound messages for dev/testing.
+
+D) Data Model (minimum)
+Tables:
+- users
+- companies (optional, if you want multi-user for PREMIUM)
+- subscriptions
+- one_time_payments
+- part_requests
+- request_media
+- request_enrichment
+- recipient_preferences
+- delivery_log
+- otp_codes
+
+E) Security & Compliance
+- Store OTP hashed
+- Store minimal personal data (LGPD)
+- Provide opt-out (mute)
+- Log consent timestamp
+
+Project Structure Expectations
+- Provide a clear README with setup steps.
+- Provide seed scripts to create sample OFFICE/VENDOR users and sample requests.
+- Use strong typing, validation (class-validator), and consistent error handling.
+- Use Allman braces only if applicable in TypeScript? (Not required; prioritize idiomatic NestJS.)
+
+Important Notes
+- Do NOT implement any in-app chat or payments between users.
+- Do NOT implement commission or negotiation features.
+- Keep the MVP minimal but production-oriented.
+- Use Brazilian Portuguese labels in the app UI.
+
+Now generate the full codebase: backend + Flutter app + docker-compose + README + minimal tests.
