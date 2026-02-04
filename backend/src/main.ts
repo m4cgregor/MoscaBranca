@@ -8,6 +8,6 @@ async function bootstrap() {
   app.enableCors(); // Allow all origins for MVP
   app.useGlobalPipes(new ValidationPipe({ transform: true })); // Validate and Transform DTOs
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
