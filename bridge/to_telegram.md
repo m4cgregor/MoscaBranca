@@ -1,20 +1,19 @@
-**Nueva Solución para Railway (Postinstall)**
+**Tercera Corrección para Railway (Nest CLI)**
 
-Grego, el error persiste porque aunque `prisma` esté en dependencias, el entorno de ejecución (`sh`) a veces no encuentra el binario cuando se llama con `npx` en ciertas fases.
+Grego, el error `sh: 1: nest: Permission denied` es idéntico al anterior pero con la CLI de NestJS.
 
-**He añadido un script `postinstall`:**
-Esto forzará la generación del cliente Prisma justo después de que `npm install` termine, que es el estándar en Railway.
+**Causa:**
+El comando `npm run build` ejecuta `nest build`. Como `@nestjs/cli` estaba en `devDependencies`, Railway no lo instalaba en producción.
 
-**Pasos:**
-1.  Haz pull (si hiciste cambios) o simplemente verifica `backend/package.json`.
-2.  Haz commit y push nuevamente:
-    ```bash
-    git add backend/package.json
-    git commit -m "Fix: Add postinstall script for prisma generate"
-    git push origin main
-    ```
-3.  **IMPORTANTE:** En Railway, cambia el **Build Command** para que sea más simple, ya que el `postinstall` se encarga de lo difícil.
-    *   Nuevo Build Command: `npm run build`
-    *   (Ya no necesitas `npm install ... && npx prisma generate ...` porque `npm install` ejecutará el `postinstall` automáticamente).
+**Fix:**
+He movido `@nestjs/cli` a `dependencies` en `backend/package.json`.
 
-Avísame si con esto logramos el deploy exitoso.
+**Acción:**
+Haz commit y push nuevamente:
+```bash
+git add backend/package.json
+git commit -m "Fix: Move @nestjs/cli to dependencies for production build"
+git push origin main
+```
+
+Esto debería ser el último eslabón. ¡Vamos que sale!
