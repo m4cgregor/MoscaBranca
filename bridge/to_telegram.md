@@ -1,18 +1,20 @@
-**Solución al Error de Railway (Prisma Permission Denied)**
+**Nueva Solución para Railway (Postinstall)**
 
-Grego, el error `sh: 1: prisma: Permission denied` o comando no encontrado ocurre porque Railway instala las dependencias en modo producción (`npm install`), ignorando las `devDependencies` donde estaba `prisma`.
+Grego, el error persiste porque aunque `prisma` esté en dependencias, el entorno de ejecución (`sh`) a veces no encuentra el binario cuando se llama con `npx` en ciertas fases.
 
-**He realizado la corrección:**
-1.  Moví `prisma` de `devDependencies` a `dependencies` en `backend/package.json`.
+**He añadido un script `postinstall`:**
+Esto forzará la generación del cliente Prisma justo después de que `npm install` termine, que es el estándar en Railway.
 
-**Pasos para ti:**
-1.  Haz un commit y push de este cambio (`backend/package.json`):
+**Pasos:**
+1.  Haz pull (si hiciste cambios) o simplemente verifica `backend/package.json`.
+2.  Haz commit y push nuevamente:
     ```bash
     git add backend/package.json
-    git commit -m "Fix: Move prisma to dependencies for Railway build"
+    git commit -m "Fix: Add postinstall script for prisma generate"
     git push origin main
     ```
-2.  Esto disparará un nuevo deploy en Railway automáticamente.
-3.  El comando de build `npm install && npx prisma generate && npm run build` ahora debería funcionar.
+3.  **IMPORTANTE:** En Railway, cambia el **Build Command** para que sea más simple, ya que el `postinstall` se encarga de lo difícil.
+    *   Nuevo Build Command: `npm run build`
+    *   (Ya no necesitas `npm install ... && npx prisma generate ...` porque `npm install` ejecutará el `postinstall` automáticamente).
 
-Avísame si el deploy pasa a verde.
+Avísame si con esto logramos el deploy exitoso.
