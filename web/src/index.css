@@ -763,6 +763,10 @@ body {
   margin-top: 1rem;
 }
 
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
 /* Typography Extras */
 .tracking-widest {
   letter-spacing: 0.1em;
