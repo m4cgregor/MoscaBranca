@@ -75,7 +75,7 @@ export function SettingsPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.patch('/users/me', {
+            const payload = {
                 role,
                 name,
                 email,
@@ -83,7 +83,14 @@ export function SettingsPage() {
                 state,
                 city,
                 makes: role === 'VENDOR' ? selectedMakes : []
-            });
+            };
+
+            await api.patch('/users/me', payload);
+
+            // Update local storage to reflect changes immediately
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            localStorage.setItem('user', JSON.stringify({ ...storedUser, ...payload }));
+
             alert('Configurações salvas com sucesso!');
             navigate('/dashboard');
         } catch (err) {
