@@ -13,12 +13,12 @@ export declare class AuthService {
             id: string;
             phone: string;
             name: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: import(".prisma/client").$Enums.UserRole;
             email: string | null;
             state: string | null;
             city: string | null;
             address: string | null;
-            status: import("@prisma/client").$Enums.UserStatus;
+            status: import(".prisma/client").$Enums.UserStatus;
             createdAt: Date;
             updatedAt: Date;
             companyId: string | null;

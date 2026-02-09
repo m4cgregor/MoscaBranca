@@ -7,8 +7,10 @@ import { RequestsModule } from './requests/requests.module';
 import { DistributionModule } from './distribution/distribution.module';
 import { UsersModule } from './users/users.module';
 
+import { WhatsappModule } from './whatsapp/whatsapp.module';
+
 @Module({
-  imports: [PrismaModule, AuthModule, RequestsModule, DistributionModule, UsersModule],
+  imports: [PrismaModule, AuthModule, RequestsModule, DistributionModule, UsersModule, WhatsappModule],
   controllers: [AppController],
   providers: [AppService],
 })

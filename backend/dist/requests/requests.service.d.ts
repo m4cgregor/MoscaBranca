@@ -16,13 +16,13 @@ export declare class RequestsService {
         partName: string;
         description: string | null;
         photoUrl: string | null;
-        status: import("@prisma/client").$Enums.RequestStatus;
+        status: import(".prisma/client").$Enums.RequestStatus;
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date | null;
         userId: string;
     }>;
-    findAll(userId: string): import("@prisma/client").Prisma.PrismaPromise<{
+    findAll(userId: string): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         readableId: string | null;
         make: string;
@@ -32,13 +32,13 @@ export declare class RequestsService {
         partName: string;
         description: string | null;
         photoUrl: string | null;
-        status: import("@prisma/client").$Enums.RequestStatus;
+        status: import(".prisma/client").$Enums.RequestStatus;
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date | null;
         userId: string;
     }[]>;
-    findOne(id: string): import("@prisma/client").Prisma.Prisma__PartRequestClient<({
+    findOne(id: string): import(".prisma/client").Prisma.Prisma__PartRequestClient<({
         user: {
             phone: string;
             name: string | null;
@@ -62,17 +62,17 @@ export declare class RequestsService {
         partName: string;
         description: string | null;
         photoUrl: string | null;
-        status: import("@prisma/client").$Enums.RequestStatus;
+        status: import(".prisma/client").$Enums.RequestStatus;
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date | null;
         userId: string;
     }) | null, null, import("@prisma/client/runtime/library").DefaultArgs>;
-    updateStatus(id: string, userId: string, status: RequestStatus): import("@prisma/client").Prisma.PrismaPromise<import("@prisma/client").Prisma.BatchPayload>;
+    updateStatus(id: string, userId: string, status: RequestStatus): import(".prisma/client").Prisma.PrismaPromise<import(".prisma/client").Prisma.BatchPayload>;
     findOpportunities(userId: string): Promise<({
         user: {
             name: string | null;
-            role: import("@prisma/client").$Enums.UserRole;
+            role: import(".prisma/client").$Enums.UserRole;
         };
     } & {
         id: string;
@@ -84,7 +84,7 @@ export declare class RequestsService {
         partName: string;
         description: string | null;
         photoUrl: string | null;
-        status: import("@prisma/client").$Enums.RequestStatus;
+        status: import(".prisma/client").$Enums.RequestStatus;
         createdAt: Date;
         updatedAt: Date;
         expiresAt: Date | null;
