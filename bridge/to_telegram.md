@@ -1,18 +1,18 @@
-**Error 500: Faltan las Tablas en la Base de Datos**
+**Error 127 de nuevo (Prisma Permission Denied)**
 
-El error 500 ocurre porque la Base de Datos en Railway está **vacía**. No tiene las tablas (`User`, `OtpCode`, etc.), por lo que el backend choca al intentar guardar el OTP.
+Maldición, el `npx` sigue fallando en Railway por permisos de ejecución.
+Al igual que con Nest, vamos a invocar a Prisma directamente con Node.
 
-**Solución Automática:**
-He modificado el comando de inicio en `backend/package.json` para que cree las tablas automáticamente al arrancar.
+**Fix Definitivo (espero):**
+He cambiado el comando `start:prod` en `backend/package.json` a:
+`node node_modules/prisma/build/index.js db push && node dist/main`
 
-**Pasos:**
-1.  Haz commit y push de este cambio:
-    ```bash
-    git add backend/package.json
-    git commit -m "Fix: Auto-run prisma db push on startup"
-    git push origin main
-    ```
-2.  Espera a que Railway redespliegue.
-3.  Vuelve a probar el Registro.
+**Acción:**
+Haz commit y push por última vez.
+```bash
+git add backend/package.json
+git commit -m "Fix: Execute prisma db push via node directly"
+git push origin main
+```
 
-¡Esta vez debería funcionar!
+Esto salta cualquier restricción de symlinks o permisos de shell. ¡Confía!
