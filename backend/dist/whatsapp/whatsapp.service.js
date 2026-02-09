@@ -82,7 +82,16 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
             return response.data;
         }
         catch (error) {
-            this.logger.error(`[WhatsappService] Failed to send to ${phone}`, error.response?.data ? JSON.stringify(error.response.data) : error.message);
+            this.logger.error(`[WhatsappService] Failed to send to ${phone}`, JSON.stringify({
+                message: error.message,
+                code: error.code,
+                response: error.response?.data,
+                config: {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    headers: error.config?.headers
+                }
+            }, null, 2));
             throw error;
         }
     }

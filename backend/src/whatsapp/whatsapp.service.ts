@@ -102,7 +102,16 @@ export class WhatsappService {
         } catch (error) {
             this.logger.error(
                 `[WhatsappService] Failed to send to ${phone}`,
-                error.response?.data ? JSON.stringify(error.response.data) : error.message
+                JSON.stringify({
+                    message: error.message,
+                    code: error.code,
+                    response: error.response?.data,
+                    config: {
+                        url: error.config?.url,
+                        method: error.config?.method,
+                        headers: error.config?.headers
+                    }
+                }, null, 2)
             );
             // Re-throw so AuthService knows it failed
             throw error;
