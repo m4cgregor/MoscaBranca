@@ -1,18 +1,18 @@
-**Cuarta Corrección (Direct Node Execution)**
+**Error 500: Faltan las Tablas en la Base de Datos**
 
-Grego, el entorno de Railway sigue teniendo problemas de permisos con los "binarios" (`nest`, `prisma`). Vamos a saltarnos los intermediarios.
+El error 500 ocurre porque la Base de Datos en Railway está **vacía**. No tiene las tablas (`User`, `OtpCode`, etc.), por lo que el backend choca al intentar guardar el OTP.
 
-**Fix:**
-He cambiado el script `build` en `backend/package.json` para que ejecute el archivo JS de Nest directamente con `node`, en lugar de usar el comando compilado `nest`.
+**Solución Automática:**
+He modificado el comando de inicio en `backend/package.json` para que cree las tablas automáticamente al arrancar.
 
-*   Antes: `"nest build"`
-*   Ahora: `"node node_modules/@nestjs/cli/bin/nest.js build"`
+**Pasos:**
+1.  Haz commit y push de este cambio:
+    ```bash
+    git add backend/package.json
+    git commit -m "Fix: Auto-run prisma db push on startup"
+    git push origin main
+    ```
+2.  Espera a que Railway redespliegue.
+3.  Vuelve a probar el Registro.
 
-**Acción:**
-Haz commit y push nuevamente. Esto debería eliminar el error `sh: 1: nest: Permission denied` definitivamente.
-```bash
-git add backend/package.json
-git commit -m "Fix: Run nest via node directly to avoid permission issues"
-git push origin main
-```
-Crucemos los dedos.
+¡Esta vez debería funcionar!
