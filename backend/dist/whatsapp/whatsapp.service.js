@@ -17,11 +17,12 @@ const rxjs_1 = require("rxjs");
 let WhatsappService = WhatsappService_1 = class WhatsappService {
     httpService;
     logger = new common_1.Logger(WhatsappService_1.name);
-    instanceName = 'moscabranca-main';
+    instanceName = process.env.WHATSAPP_INSTANCE_NAME || 'moscabranca-main';
     apiKey = process.env.EVOLUTION_API_KEY || 'moscabranca-secret-key';
     baseUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8081';
     constructor(httpService) {
         this.httpService = httpService;
+        this.logger.log(`Initialized WhatsappService with URL=${this.baseUrl}, Instance=${this.instanceName}`);
     }
     async createInstance() {
         try {
@@ -62,23 +63,27 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
             const url = `${this.baseUrl}/message/sendText/${this.instanceName}`;
             const body = {
                 number: cleanPhone,
+                text: text,
+                textMessage: {
+                    text: text
+                },
                 options: {
                     delay: 1200,
                     presence: 'composing',
                     linkPreview: false
-                },
-                textMessage: {
-                    text: text
                 }
             };
-            this.logger.log(`Sending WhatsApp to ${cleanPhone}: ${text}`);
+            this.logger.log(`[WhatsappService] Sending to ${cleanPhone} via ${url}`);
+            this.logger.debug(`[WhatsappService] Payload: ${JSON.stringify(body)}`);
             const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(url, body, {
                 headers: { apikey: this.apiKey }
             }));
+            this.logger.log(`[WhatsappService] Success: ${JSON.stringify(response.data)}`);
             return response.data;
         }
         catch (error) {
-            this.logger.error(`Failed to send WhatsApp to ${phone}`, error.response?.data || error.message);
+            this.logger.error(`[WhatsappService] Failed to send to ${phone}`, error.response?.data ? JSON.stringify(error.response.data) : error.message);
+            throw error;
         }
     }
 };

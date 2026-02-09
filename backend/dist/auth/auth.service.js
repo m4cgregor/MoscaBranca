@@ -69,7 +69,16 @@ let AuthService = class AuthService {
                 expiresAt,
             },
         });
-        await this.whatsappService.sendText(phone, `Seu código de acesso MoscaBranca: ${code}`);
+        try {
+            console.log(`[AuthService] Attempting to send OTP to ${phone} via WhatsApp...`);
+            await this.whatsappService.sendText(phone, `Tu código de acceso MoscaBranca: ${code}`);
+            console.log(`[AuthService] OTP sent successfully.`);
+        }
+        catch (error) {
+            console.error(`[AuthService] Failed to send WhatsApp OTP:`, error.message);
+            console.log(`[FALLBACK] OTP for ${phone}: ${code}`);
+            throw new Error('Failed to send OTP via WhatsApp');
+        }
         return { message: 'OTP sent via WhatsApp' };
     }
     async verifyOtp(phone, code) {

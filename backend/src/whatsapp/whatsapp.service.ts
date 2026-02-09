@@ -6,13 +6,15 @@ import { lastValueFrom } from 'rxjs';
 @Injectable()
 export class WhatsappService {
     private readonly logger = new Logger(WhatsappService.name);
-    private readonly instanceName = 'moscabranca-main';
+    private readonly instanceName = process.env.WHATSAPP_INSTANCE_NAME || 'moscabranca-main';
     private readonly apiKey = process.env.EVOLUTION_API_KEY || 'moscabranca-secret-key';
 
     // Default to localhost:8081 for local. In Docker, it should be http://evolution-api:8080
     private readonly baseUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8081';
 
-    constructor(private httpService: HttpService) { }
+    constructor(private httpService: HttpService) {
+        this.logger.log(`Initialized WhatsappService with URL=${this.baseUrl}, Instance=${this.instanceName}`);
+    }
 
     /**
      * Tries to create an instance. If it exists, it might fail or return existing info.
@@ -67,24 +69,27 @@ export class WhatsappService {
      */
     async sendText(phone: string, text: string) {
         try {
-            // Ensure phone format is correct (e.g. 5511999999999)
-            // Evolution usually handles raw numbers but '55' prefix is safer for Brazil.
+            // Ensure phone format is correct
             const cleanPhone = phone.replace(/\D/g, '');
 
             const url = `${this.baseUrl}/message/sendText/${this.instanceName}`;
+
+            // Payload compatible with both known formats (v1 and v2)
             const body = {
                 number: cleanPhone,
+                text: text, // v2
+                textMessage: {
+                    text: text // v1
+                },
                 options: {
                     delay: 1200,
                     presence: 'composing',
                     linkPreview: false
-                },
-                textMessage: {
-                    text: text
                 }
             };
 
-            this.logger.log(`Sending WhatsApp to ${cleanPhone}: ${text}`);
+            this.logger.log(`[WhatsappService] Sending to ${cleanPhone} via ${url}`);
+            this.logger.debug(`[WhatsappService] Payload: ${JSON.stringify(body)}`);
 
             const response = await lastValueFrom(
                 this.httpService.post(url, body, {
@@ -92,10 +97,15 @@ export class WhatsappService {
                 })
             );
 
+            this.logger.log(`[WhatsappService] Success: ${JSON.stringify(response.data)}`);
             return response.data;
         } catch (error) {
-            this.logger.error(`Failed to send WhatsApp to ${phone}`, error.response?.data || error.message);
-            // In a real scenario, you might want to throw or fallback to email/SMS
+            this.logger.error(
+                `[WhatsappService] Failed to send to ${phone}`,
+                error.response?.data ? JSON.stringify(error.response.data) : error.message
+            );
+            // Re-throw so AuthService knows it failed
+            throw error;
         }
     }
 }

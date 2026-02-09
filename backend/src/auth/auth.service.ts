@@ -35,9 +35,16 @@ export class AuthService {
     });
 
     // 5. Send via WhatsApp
-    await this.whatsappService.sendText(phone, `Seu código de acesso MoscaBranca: ${code}`);
-
-    // console.log(`[DEV MODE] OTP for ${phone}: ${code}`);
+    try {
+      console.log(`[AuthService] Attempting to send OTP to ${phone} via WhatsApp...`);
+      await this.whatsappService.sendText(phone, `Tu código de acceso MoscaBranca: ${code}`);
+      console.log(`[AuthService] OTP sent successfully.`);
+    } catch (error) {
+      console.error(`[AuthService] Failed to send WhatsApp OTP:`, error.message);
+      // Fallback for dev/debug
+      console.log(`[FALLBACK] OTP for ${phone}: ${code}`);
+      throw new Error('Failed to send OTP via WhatsApp');
+    }
 
     return { message: 'OTP sent via WhatsApp' };
   }
