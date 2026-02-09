@@ -4,12 +4,14 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '@prisma/client';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private whatsappService: WhatsappService,
   ) { }
 
   // Request OTP
@@ -32,10 +34,12 @@ export class AuthService {
       },
     });
 
-    // 5. Mock send (log to console)
-    console.log(`[DEV MODE] OTP for ${phone}: ${code}`);
+    // 5. Send via WhatsApp
+    await this.whatsappService.sendText(phone, `Seu código de acesso MoscaBranca: ${code}`);
 
-    return { message: 'OTP sent (check console)' };
+    // console.log(`[DEV MODE] OTP for ${phone}: ${code}`);
+
+    return { message: 'OTP sent via WhatsApp' };
   }
 
   // Verify OTP & Login/Register

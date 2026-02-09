@@ -48,12 +48,15 @@ const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = __importStar(require("bcrypt"));
 const client_1 = require("@prisma/client");
+const whatsapp_service_1 = require("../whatsapp/whatsapp.service");
 let AuthService = class AuthService {
     prisma;
     jwtService;
-    constructor(prisma, jwtService) {
+    whatsappService;
+    constructor(prisma, jwtService, whatsappService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+        this.whatsappService = whatsappService;
     }
     async requestOtp(phone) {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -66,8 +69,8 @@ let AuthService = class AuthService {
                 expiresAt,
             },
         });
-        console.log(`[DEV MODE] OTP for ${phone}: ${code}`);
-        return { message: 'OTP sent (check console)' };
+        await this.whatsappService.sendText(phone, `Seu código de acesso MoscaBranca: ${code}`);
+        return { message: 'OTP sent via WhatsApp' };
     }
     async verifyOtp(phone, code) {
         const otpRecord = await this.prisma.otpCode.findFirst({
@@ -111,6 +114,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        whatsapp_service_1.WhatsappService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map
