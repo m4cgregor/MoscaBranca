@@ -245,7 +245,7 @@ export function SettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="btn btn-primary w-full flex items-center justify-center gap-2"
+                    className="btn btn-primary w-full flex items-center justify-center gap-2 mt-6"
                 >
                     {saving ? 'Salvando...' : <><Save className="w-4 h-4" /> Salvar Alterações</>}
                 </button>
